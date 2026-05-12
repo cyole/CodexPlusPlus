@@ -14,7 +14,7 @@
   const chatsSortRefreshIntervalMs = 1500;
   const chatsSortDbRefreshIntervalMs = 5000;
   const styleId = "codex-delete-style";
-  const codexDeleteStyleVersion = "6";
+  const codexDeleteStyleVersion = "7";
   const codexPlusMenuId = "codex-plus-menu";
   const codexDeleteVersion = "6";
   const codexExportVersion = "1";
@@ -248,6 +248,10 @@
       }
       .codex-plus-modal-content {
         width: min(520px, calc(100vw - 48px));
+        max-height: min(680px, calc(100vh - 40px));
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
         border: 1px solid rgba(255,255,255,.12);
         border-radius: 18px;
         background: #2b2b2b;
@@ -259,7 +263,8 @@
         display: flex;
         align-items: center;
         justify-content: space-between;
-        padding: 18px 20px 10px;
+        padding: 16px 20px 8px;
+        flex: 0 0 auto;
       }
       .codex-plus-modal-title { display: flex; align-items: center; gap: 8px; font-size: 18px; font-weight: 650; }
       .codex-plus-backend-indicator { width: 9px; height: 9px; border-radius: 999px; background: #a1a1aa; display: inline-block; }
@@ -273,18 +278,36 @@
         font-size: 20px;
         cursor: default;
       }
-      .codex-plus-modal-body { padding: 8px 20px 20px; }
+      .codex-plus-modal-body {
+        flex: 1 1 auto;
+        min-height: 0;
+        overflow-y: auto;
+        overscroll-behavior: contain;
+        scrollbar-gutter: stable;
+        padding: 4px 20px 16px;
+        scrollbar-width: thin;
+        scrollbar-color: rgba(255,255,255,.28) transparent;
+      }
+      .codex-plus-modal-body::-webkit-scrollbar { width: 10px; }
+      .codex-plus-modal-body::-webkit-scrollbar-track { background: transparent; }
+      .codex-plus-modal-body::-webkit-scrollbar-thumb {
+        border: 2px solid transparent;
+        border-radius: 999px;
+        background: rgba(255,255,255,.28);
+        background-clip: padding-box;
+      }
+      .codex-plus-modal-body::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,.38); background-clip: padding-box; }
       .codex-plus-row {
         display: flex;
-        align-items: center;
+        align-items: flex-start;
         justify-content: space-between;
-        gap: 16px;
-        padding: 12px 0;
+        gap: 12px;
+        padding: 10px 0;
         border-top: 1px solid rgba(255,255,255,.1);
       }
       .codex-plus-row:first-child { border-top: 0; }
-      .codex-plus-row-title { font-weight: 550; }
-      .codex-plus-row-description { margin-top: 3px; color: #a1a1aa; font-size: 12px; }
+      .codex-plus-row-title { font-weight: 550; line-height: 1.35; }
+      .codex-plus-row-description { margin-top: 2px; color: #a1a1aa; font-size: 12px; line-height: 1.4; }
       .codex-plus-toggle {
         width: 42px;
         height: 24px;
@@ -301,14 +324,22 @@
         background: white;
         transition: transform .12s ease;
       }
+      .codex-plus-toggle,
+      .codex-plus-action-button,
+      .codex-plus-issue-button,
+      .codex-plus-backend-status {
+        flex-shrink: 0;
+        align-self: center;
+      }
       .codex-plus-toggle[data-enabled="true"] { background: #10a37f; }
       .codex-plus-toggle[data-enabled="true"] span { transform: translateX(18px); }
       .codex-plus-about { color: #a1a1aa; line-height: 1.5; }
-      .codex-plus-tabs { display: flex; gap: 8px; padding: 0 20px 8px; }
+      .codex-plus-tabs { display: flex; gap: 8px; padding: 0 20px 6px; flex: 0 0 auto; }
       .codex-plus-tab-button { border: 1px solid rgba(255,255,255,.14); border-radius: 999px; background: transparent; color: #d1d5db; font: 12px system-ui, sans-serif; padding: 5px 10px; }
       .codex-plus-tab-button[data-active="true"] { background: #10a37f; color: white; border-color: #10a37f; }
       .codex-plus-panel[hidden] { display: none; }
-      .codex-plus-action-button { border: 1px solid rgba(255,255,255,.18); border-radius: 7px; background: #3f3f46; color: #f3f4f6; font: 12px system-ui, sans-serif; padding: 6px 8px; }
+      .codex-plus-action-button,
+      .codex-plus-issue-button { border: 1px solid rgba(255,255,255,.18); border-radius: 7px; background: #3f3f46; color: #f3f4f6; font: 12px system-ui, sans-serif; padding: 6px 8px; }
       .codex-plus-backend-status { display: grid; gap: 4px; min-width: 132px; justify-items: end; }
       .codex-plus-backend-label { color: #a1a1aa; font-size: 12px; }
       .codex-plus-backend-label[data-status="ok"] { color: #34d399; }

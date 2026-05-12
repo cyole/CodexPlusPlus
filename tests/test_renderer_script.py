@@ -194,7 +194,7 @@ def test_renderer_script_sidebar_delete_opens_on_pointerup_when_click_is_unrelia
 
     text = Path("codex_session_delete/inject/renderer-inject.js").read_text(encoding="utf-8")
     assert "updateDeleteButtonOffsets" in text
-    assert "codexDeleteStyleVersion = \"6\"" in text
+    assert "codexDeleteStyleVersion = \"7\"" in text
     assert "right: 66px" in text
     assert "确认" in text
     assert "归档对话" in text
