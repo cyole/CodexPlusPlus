@@ -82,7 +82,7 @@ def test_provider_sync_normalizes_sqlite_cwd_to_desktop_path(tmp_path):
     assert row == ("C:/workspace",)
 
 
-def test_provider_sync_resolves_global_state_roots_from_sqlite_cwd_stats(tmp_path):
+def test_provider_sync_normalizes_existing_global_state_roots(tmp_path):
     codex_home = tmp_path / ".codex"
     codex_home.mkdir()
     (codex_home / "config.toml").write_text('model_provider = "apigather"\n', encoding="utf-8")
@@ -108,6 +108,85 @@ def test_provider_sync_resolves_global_state_roots_from_sqlite_cwd_stats(tmp_pat
     assert state["project-order"] == ["C:/workspace"]
     assert state["active-workspace-roots"] == ["C:/workspace"]
     assert state["electron-workspace-root-labels"] == {"C:/workspace": "Workspace"}
+
+
+def test_provider_sync_does_not_create_workspace_roots_from_historical_thread_cwds(tmp_path):
+    codex_home = tmp_path / ".codex"
+    codex_home.mkdir()
+    (codex_home / "config.toml").write_text('model_provider = "apigather"\n', encoding="utf-8")
+    (codex_home / ".codex-global-state.json").write_text(
+        json.dumps(
+            {
+                "electron-saved-workspace-roots": [],
+                "project-order": [],
+                "active-workspace-roots": [],
+            }
+        ),
+        encoding="utf-8",
+    )
+    write_rollout(
+        codex_home / "sessions" / "rollout-current.jsonl",
+        provider="apigather",
+        thread_id="thread-1",
+        cwd="C:/Users/shallfun/.codex/plugins/example-plugin",
+    )
+    create_state_db(codex_home / "state_5.sqlite")
+
+    result = run_provider_sync(codex_home)
+
+    assert result.status == ProviderSyncStatus.SYNCED
+    state = json.loads((codex_home / ".codex-global-state.json").read_text(encoding="utf-8"))
+    assert state["electron-saved-workspace-roots"] == []
+    assert state["project-order"] == []
+    assert state["active-workspace-roots"] == []
+
+
+def test_provider_sync_does_not_reintroduce_removed_roots_from_other_lists(tmp_path):
+    codex_home = tmp_path / ".codex"
+    codex_home.mkdir()
+    (codex_home / "config.toml").write_text('model_provider = "apigather"\n', encoding="utf-8")
+    (codex_home / ".codex-global-state.json").write_text(
+        json.dumps(
+            {
+                "electron-saved-workspace-roots": [],
+                "project-order": ["\\\\?\\C:\\ghost-plugin"],
+                "active-workspace-roots": ["\\\\?\\C:\\ghost-plugin"],
+            }
+        ),
+        encoding="utf-8",
+    )
+    write_rollout(codex_home / "sessions" / "rollout-current.jsonl", provider="apigather", thread_id="thread-1", cwd="C:/workspace")
+    create_state_db(codex_home / "state_5.sqlite")
+
+    result = run_provider_sync(codex_home)
+
+    assert result.status == ProviderSyncStatus.SYNCED
+    state = json.loads((codex_home / ".codex-global-state.json").read_text(encoding="utf-8"))
+    assert state["electron-saved-workspace-roots"] == []
+    assert state["project-order"] == ["C:/ghost-plugin"]
+    assert state["active-workspace-roots"] == ["C:/ghost-plugin"]
+
+
+def test_provider_sync_normalizes_scalar_active_workspace_root(tmp_path):
+    codex_home = tmp_path / ".codex"
+    codex_home.mkdir()
+    (codex_home / "config.toml").write_text('model_provider = "apigather"\n', encoding="utf-8")
+    (codex_home / ".codex-global-state.json").write_text(
+        json.dumps(
+            {
+                "active-workspace-roots": "\\\\?\\C:\\workspace",
+            }
+        ),
+        encoding="utf-8",
+    )
+    write_rollout(codex_home / "sessions" / "rollout-current.jsonl", provider="apigather", thread_id="thread-1", cwd="C:/workspace")
+    create_state_db(codex_home / "state_5.sqlite")
+
+    result = run_provider_sync(codex_home)
+
+    assert result.status == ProviderSyncStatus.SYNCED
+    state = json.loads((codex_home / ".codex-global-state.json").read_text(encoding="utf-8"))
+    assert state["active-workspace-roots"] == "C:/workspace"
 
 
 def test_provider_sync_skips_when_lock_exists(tmp_path):
