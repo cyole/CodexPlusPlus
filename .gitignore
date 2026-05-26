@@ -7,6 +7,7 @@ build/
 dist/
 target/
 apps/codex-plus-manager/src-tauri/gen/
+node_modules
 
 .codex_asar_extract/
 .codex_asar_extract_latest/

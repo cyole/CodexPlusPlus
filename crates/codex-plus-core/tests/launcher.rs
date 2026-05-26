@@ -352,10 +352,10 @@ fn ports_windows_falls_back_to_ephemeral_when_requested_is_busy() {
 }
 
 #[test]
-fn ports_non_windows_keeps_requested_even_when_busy() {
+fn ports_non_windows_falls_back_to_ephemeral_when_requested_is_busy() {
     let selected = select_platform_loopback_port_with(9229, false, |_| false, || 43001);
 
-    assert_eq!(selected, 9229);
+    assert_eq!(selected, 43001);
 }
 
 #[test]
