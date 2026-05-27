@@ -1,20 +1,30 @@
 name: Release assets
 
 on:
-  release:
-    types: [published]
+  workflow_dispatch:
+    inputs:
+      enabled:
+        description: Temporarily disabled. Set true to run this legacy release asset workflow manually.
+        required: true
+        default: false
+        type: boolean
+      tag:
+        description: Release tag to build when enabled, for example v1.1.7.
+        required: false
+        type: string
 
 permissions:
   contents: write
 
 jobs:
   windows-installer:
+    if: ${{ inputs.enabled && inputs.tag != '' }}
     runs-on: windows-latest
     steps:
       - name: Checkout release tag
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.release.tag_name }}
+          ref: ${{ inputs.tag }}
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -48,7 +58,7 @@ jobs:
       - name: Build Windows installer
         shell: pwsh
         run: |
-          $version = "${{ github.event.release.tag_name }}".TrimStart("v", "V")
+          $version = "${{ inputs.tag }}".TrimStart("v", "V")
           $makensis = "${env:ProgramFiles(x86)}\NSIS\makensis.exe"
           if (-not (Test-Path $makensis)) {
             $makensis = "makensis"
@@ -60,10 +70,11 @@ jobs:
       - name: Upload Windows installer
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ github.event.release.tag_name }}
+          tag_name: ${{ inputs.tag }}
           files: dist/windows/*.exe
 
   macos-dmg:
+    if: ${{ inputs.enabled && inputs.tag != '' }}
     name: macOS DMG (${{ matrix.arch }})
     runs-on: ${{ matrix.runner }}
     strategy:
@@ -80,7 +91,7 @@ jobs:
       - name: Checkout release tag
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.release.tag_name }}
+          ref: ${{ inputs.tag }}
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -105,17 +116,19 @@ jobs:
 
       - name: Build macOS DMG
         run: |
-          VERSION="${GITHUB_REF_NAME#v}"
+          VERSION="${{ inputs.tag }}"
+          VERSION="${VERSION#v}"
           VERSION="${VERSION#V}"
           BINARY_DIR="$PWD/target/${{ matrix.target }}/release" bash scripts/installer/macos/package-dmg.sh "$VERSION" "${{ matrix.arch }}"
 
       - name: Upload macOS DMG
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ github.event.release.tag_name }}
+          tag_name: ${{ inputs.tag }}
           files: dist/macos/*.dmg
 
   latest-json:
+    if: ${{ inputs.enabled && inputs.tag != '' }}
     name: Upload static latest.json
     runs-on: ubuntu-latest
     needs:
@@ -126,7 +139,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           REPO: ${{ github.repository }}
-          TAG: ${{ github.event.release.tag_name }}
+          TAG: ${{ inputs.tag }}
         shell: bash
         run: |
           set -euo pipefail
@@ -155,7 +168,7 @@ jobs:
       - name: Upload latest.json
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          TAG: ${{ github.event.release.tag_name }}
+          TAG: ${{ inputs.tag }}
           REPO: ${{ github.repository }}
         shell: bash
         run: gh release upload "$TAG" latest.json --clobber --repo "$REPO"
