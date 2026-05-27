@@ -335,7 +335,7 @@ export function App() {
   const [scriptMarket, setScriptMarket] = useState<ScriptMarketResult | null>(null);
   const [launchForm, setLaunchForm] = useState({
     appPath: "",
-    debugPort: "9229",
+    debugPort: "",
     helperPort: "57321",
   });
   const [settingsForm, setSettingsForm] = useState<BackendSettings>({ ...defaultSettings });
@@ -509,7 +509,7 @@ export function App() {
       call<CommandResult<Record<string, unknown>>>(command, {
         request: {
           appPath: launchForm.appPath,
-          debugPort: numberOrDefault(launchForm.debugPort, 9229),
+          debugPort: numberOrDefault(launchForm.debugPort, 0),
           helperPort: numberOrDefault(launchForm.helperPort, 57321),
         },
       }),

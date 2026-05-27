@@ -18,6 +18,9 @@ pub fn select_platform_loopback_port_with(
     can_bind: impl Fn(u16) -> bool,
     find_available: impl Fn() -> u16,
 ) -> u16 {
+    if requested == 0 {
+        return find_available();
+    }
     if can_bind(requested) {
         requested
     } else {

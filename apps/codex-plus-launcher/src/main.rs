@@ -26,7 +26,7 @@ impl Default for LauncherHooks {
             core: Arc::new(DefaultLaunchHooks::default()),
             data: Arc::new(LauncherDataService::default()),
             runtime: Arc::new(LauncherRuntimeService::new(
-                9229,
+                LaunchOptions::default().debug_port,
                 default_user_script_manager(),
             )),
         }

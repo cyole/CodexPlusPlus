@@ -1408,7 +1408,7 @@ fn failed<T: Serialize>(message: &str, payload: T) -> CommandResult<T> {
 }
 
 fn default_debug_port() -> u16 {
-    9229
+    codex_plus_core::launcher::LaunchOptions::default().debug_port
 }
 
 fn default_helper_port() -> u16 {

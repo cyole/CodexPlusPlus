@@ -359,6 +359,23 @@ fn ports_non_windows_falls_back_to_ephemeral_when_requested_is_busy() {
 }
 
 #[test]
+fn ports_selects_ephemeral_when_requested_is_zero() {
+    let selected = select_platform_loopback_port_with(
+        0,
+        false,
+        |_| panic!("zero should skip probing the requested port"),
+        || 43001,
+    );
+
+    assert_eq!(selected, 43001);
+}
+
+#[test]
+fn default_launch_options_request_dynamic_debug_port() {
+    assert_eq!(LaunchOptions::default().debug_port, 0);
+}
+
+#[test]
 fn proxy_uses_existing_environment_before_system_proxy() {
     let env = HashMap::from([(
         "HTTPS_PROXY".to_string(),
