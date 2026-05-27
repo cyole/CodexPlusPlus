@@ -1,0 +1,224 @@
+name: Windows installer
+
+on:
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: Git ref to build. Leave empty to use the selected branch.
+        required: false
+        type: string
+      version:
+        description: Version label for the installer. Leave empty to derive from the ref or package.json.
+        required: false
+        type: string
+      upload_release:
+        description: Upload the installer to the matching GitHub Release.
+        required: true
+        default: true
+        type: boolean
+      sign_windows:
+        description: Sign with Azure Artifact Signing. Leave false unless Azure Artifact Signing is configured.
+        required: true
+        default: false
+        type: boolean
+
+permissions:
+  contents: write
+  id-token: write
+
+jobs:
+  windows-installer:
+    name: Windows installer
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout ref
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref || github.ref_name }}
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Install NSIS
+        run: choco install nsis -y
+
+      - name: Install frontend dependencies
+        working-directory: apps/codex-plus-manager
+        run: npm install --package-lock=false
+
+      - name: Build frontend
+        working-directory: apps/codex-plus-manager
+        run: npm run vite:build
+
+      - name: Build binaries
+        run: cargo build --release
+
+      - name: Resolve version and tag
+        id: meta
+        shell: pwsh
+        env:
+          INPUT_VERSION: ${{ inputs.version }}
+          INPUT_REF: ${{ inputs.ref }}
+        run: |
+          $ErrorActionPreference = "Stop"
+          $version = ([string]$env:INPUT_VERSION).Trim()
+          $version = $version -replace '^[vV]', ''
+          if ([string]::IsNullOrWhiteSpace($version)) {
+            $ref = ([string]$env:INPUT_REF).Trim()
+            if ([string]::IsNullOrWhiteSpace($ref)) {
+              $ref = "${{ github.ref_name }}"
+            }
+            $candidate = $ref -replace '^refs/tags/', ''
+            $candidate = $candidate -replace '^[vV]', ''
+            if ($candidate -match '^[0-9]+(\.[0-9]+){1,3}([-+][0-9A-Za-z.-]+)?$') {
+              $version = $candidate
+            }
+          }
+          if ([string]::IsNullOrWhiteSpace($version)) {
+            $version = node -p "require('./apps/codex-plus-manager/package.json').version"
+          }
+          $tag = "v$version"
+          "VERSION=$version" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+          "TAG=$tag" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+          "version=$version" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
+          "tag=$tag" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
+          Write-Host "Using version: $version"
+          Write-Host "Using tag: $tag"
+
+      - name: Azure login for Artifact Signing
+        if: ${{ inputs.sign_windows }}
+        uses: azure/login@v3
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Sign Windows binaries
+        if: ${{ inputs.sign_windows }}
+        uses: azure/artifact-signing-action@v2
+        with:
+          endpoint: ${{ secrets.AZURE_ARTIFACT_SIGNING_ENDPOINT }}
+          signing-account-name: ${{ secrets.AZURE_ARTIFACT_SIGNING_ACCOUNT }}
+          certificate-profile-name: ${{ secrets.AZURE_ARTIFACT_SIGNING_PROFILE }}
+          files: |
+            ${{ github.workspace }}\target\release\codex-plus-plus.exe
+            ${{ github.workspace }}\target\release\codex-plus-plus-manager.exe
+          file-digest: SHA256
+          timestamp-rfc3161: http://timestamp.acs.microsoft.com
+          timestamp-digest: SHA256
+          description: Codex++ for Windows
+          description-url: https://github.com/${{ github.repository }}
+
+      - name: Verify Windows binary signatures
+        if: ${{ inputs.sign_windows }}
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Stop"
+          $files = @(
+            "target/release/codex-plus-plus.exe",
+            "target/release/codex-plus-plus-manager.exe"
+          )
+          foreach ($file in $files) {
+            $signature = Get-AuthenticodeSignature $file
+            if ($signature.Status -ne "Valid") {
+              Write-Error "Invalid Authenticode signature for ${file}: $($signature.Status)"
+            }
+            Write-Host "Valid signature: $file"
+          }
+
+      - name: Stage Windows app files
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force dist/windows/app | Out-Null
+          Copy-Item target/release/codex-plus-plus.exe dist/windows/app/
+          Copy-Item target/release/codex-plus-plus-manager.exe dist/windows/app/
+
+      - name: Build Windows installer
+        shell: pwsh
+        env:
+          VERSION: ${{ steps.meta.outputs.version }}
+        run: |
+          $ErrorActionPreference = "Stop"
+          $makensis = "${env:ProgramFiles(x86)}\NSIS\makensis.exe"
+          if (-not (Test-Path $makensis)) {
+            $makensis = "makensis"
+          }
+          Push-Location scripts/installer/windows
+          & $makensis "/INPUTCHARSET" "UTF8" "/DVERSION=$env:VERSION" CodexPlusPlus.nsi
+          Pop-Location
+
+      - name: Sign Windows installer
+        if: ${{ inputs.sign_windows }}
+        uses: azure/artifact-signing-action@v2
+        with:
+          endpoint: ${{ secrets.AZURE_ARTIFACT_SIGNING_ENDPOINT }}
+          signing-account-name: ${{ secrets.AZURE_ARTIFACT_SIGNING_ACCOUNT }}
+          certificate-profile-name: ${{ secrets.AZURE_ARTIFACT_SIGNING_PROFILE }}
+          files-folder: ${{ github.workspace }}\dist\windows
+          files-folder-filter: exe
+          file-digest: SHA256
+          timestamp-rfc3161: http://timestamp.acs.microsoft.com
+          timestamp-digest: SHA256
+          description: Codex++ Windows installer
+          description-url: https://github.com/${{ github.repository }}
+
+      - name: Verify Windows installer signature
+        if: ${{ inputs.sign_windows }}
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Stop"
+          $files = @(Get-ChildItem -Path "dist/windows" -Filter "*.exe" | Sort-Object FullName)
+          foreach ($file in $files) {
+            $signature = Get-AuthenticodeSignature $file.FullName
+            if ($signature.Status -ne "Valid") {
+              Write-Error "Invalid Authenticode signature for $($file.FullName): $($signature.Status)"
+            }
+            Write-Host "Valid signature: $($file.FullName)"
+          }
+
+      - name: Upload Windows installer artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: CodexPlusPlus-${{ steps.meta.outputs.version }}-windows-x64
+          path: dist/windows/*.exe
+          if-no-files-found: error
+
+      - name: Upload Windows installer to release
+        if: ${{ inputs.upload_release }}
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ steps.meta.outputs.tag }}
+          VERSION: ${{ steps.meta.outputs.version }}
+          REPO: ${{ github.repository }}
+        run: |
+          $ErrorActionPreference = "Stop"
+          $files = @(Get-ChildItem -Path "dist/windows" -Filter "*.exe" | Sort-Object FullName)
+          if ($files.Count -eq 0) {
+            Write-Error "No Windows installer found"
+          }
+
+          $targetSha = (git rev-parse HEAD).Trim()
+          $null = gh release view $env:TAG --repo $env:REPO 2>$null
+          $releaseExists = $LASTEXITCODE -eq 0
+          $filePaths = @($files | ForEach-Object { $_.FullName })
+
+          if ($releaseExists) {
+            $uploadArgs = @("release", "upload", $env:TAG) + $filePaths + @("--clobber", "--repo", $env:REPO)
+            & gh @uploadArgs
+          } else {
+            $notes = "Windows x64 installer build for Codex++ $env:VERSION.`n`nBuilt from: $targetSha"
+            $createArgs = @("release", "create", $env:TAG) + $filePaths + @(
+              "--title", "Codex++ $env:TAG",
+              "--notes", $notes,
+              "--target", $targetSha,
+              "--repo", $env:REPO
+            )
+            & gh @createArgs
+          }
