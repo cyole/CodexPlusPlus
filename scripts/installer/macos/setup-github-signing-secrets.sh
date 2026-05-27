@@ -60,7 +60,7 @@ set_secret() {
   local name="$1"
   local value="$2"
   log "setting $name"
-  printf '%s' "$value" | gh secret set "$name" --repo "$REPO" --body-file -
+  printf '%s' "$value" | gh secret set "$name" --repo "$REPO" --app actions
 }
 
 parse_args() {
