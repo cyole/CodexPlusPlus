@@ -35,16 +35,13 @@ fn bridge_script_defines_expected_globals_and_binding() {
 }
 
 #[test]
-fn injection_script_prefixes_helper_url_and_sponsor_images() {
+fn injection_script_prefixes_helper_url_and_metadata() {
     let script = assets::injection_script(57321);
 
     assert!(script.contains("window.__CODEX_SESSION_DELETE_HELPER__"));
     assert!(script.contains("http://127.0.0.1:57321"));
-    assert!(script.contains("window.__CODEX_PLUS_SPONSOR_IMAGES__"));
     assert!(script.contains("window.__CODEX_PLUS_VERSION__"));
     assert!(script.contains(codex_plus_core::version::VERSION));
-    assert!(script.contains("https://discord.gg/y96kX7A76v"));
-    assert!(script.contains("data-codex-plus-discord"));
 }
 
 #[test]
@@ -54,20 +51,21 @@ fn injection_script_marks_diagnostic_build_and_reports_script_loaded() {
     assert!(script.contains("window.__CODEX_PLUS_BUILD__"));
     assert!(script.contains(codex_plus_core::assets::DIAGNOSTIC_BUILD_ID));
     assert!(script.contains("script_loaded"));
-    assert!(script.contains("data-codex-plus-build"));
 }
 
 #[test]
-fn injection_script_fetches_ads_without_bridge() {
+fn injection_script_does_not_render_promo_or_support_sections() {
     let script = assets::injection_script(57321);
 
-    assert!(script.contains("directFetchCodexPlusAds"));
-    assert!(script.contains("cacheBustCodexPlusAdUrl"));
-    assert!(script.contains("Date.now()"));
-    assert!(script.contains("BigPizzaV3/Ad-List"));
-    assert!(
-        !script.contains("codexPlusAds = normalizeCodexPlusAds(await postJson(\"/ads\", {}));")
-    );
+    assert!(!script.contains("data-codex-plus-tab=\"sponsor\""));
+    assert!(!script.contains("data-codex-plus-tab=\"support\""));
+    assert!(!script.contains("data-codex-plus-discord"));
+    assert!(!script.contains("data-codex-plus-issue"));
+    assert!(!script.contains("关于 Codex++"));
+    assert!(!script.contains("Discord 社区"));
+    assert!(!script.contains("提出问题"));
+    assert!(!script.contains("directFetchCodexPlusAds"));
+    assert!(!script.contains("BigPizzaV3/Ad-List"));
 }
 
 #[test]
@@ -177,63 +175,23 @@ fn injection_script_unlocks_custom_model_catalog() {
 }
 
 #[test]
-fn injection_script_exposes_fast_service_tier_control() {
+fn injection_script_hides_fast_service_tier_control() {
     let script = assets::injection_script(57321);
 
-    assert!(script.contains("default-service-tier"));
-    assert!(script.contains("setting-storage-"));
-    assert!(script.contains("codexAppAssetUrl"));
-    assert!(script.contains("codexThreadServiceTierOverrides"));
-    assert!(script.contains("setCodexThreadServiceTierMode"));
-    assert!(script.contains("codexServiceTierRequestOverride"));
     assert!(script.contains("serviceTierControls: false"));
-    assert!(script.contains("data-codex-plus-setting=\"serviceTierControls\""));
-    assert!(script.contains("data-codex-service-tier-controls"));
+    assert!(script.contains("settings.serviceTierControls = false"));
+    assert!(!script.contains("Fast 按钮"));
+    assert!(!script.contains("data-codex-plus-setting=\"serviceTierControls\""));
+    assert!(!script.contains("data-codex-service-tier-controls=\"true\""));
+    assert!(!script.contains("data-codex-service-tier-status=\"true\""));
+    assert!(!script.contains("data-codex-service-tier-inherit=\"true\""));
+    assert!(!script.contains("data-codex-service-tier-standard=\"true\""));
+    assert!(!script.contains("data-codex-service-tier-fast=\"true\""));
+    assert!(!script.contains("data-codex-service-tier-custom=\"true\""));
+    assert!(!script.contains("data-codex-service-tier-thread-inherit=\"true\""));
+    assert!(!script.contains("data-codex-service-tier-thread-standard=\"true\""));
+    assert!(!script.contains("data-codex-service-tier-thread-fast=\"true\""));
     assert!(script.contains("removeCodexServiceTierBadges"));
-    assert!(script.contains("installCodexServiceTierDispatcherPatch"));
-    assert!(script.contains("服务模式"));
-    assert!(script.contains("data-codex-service-tier-status"));
-    assert!(script.contains("data-codex-service-tier-inherit"));
-    assert!(script.contains("data-codex-service-tier-standard"));
-    assert!(script.contains("data-codex-service-tier-fast"));
-    assert!(script.contains("data-codex-service-tier-custom"));
-    assert!(script.contains("data-codex-service-tier-thread-inherit"));
-    assert!(script.contains("data-codex-service-tier-thread-standard"));
-    assert!(script.contains("data-codex-service-tier-thread-fast"));
-    assert!(script.contains("global-standard"));
-    assert!(script.contains("global-fast"));
-    assert!(script.contains("defaultMode"));
-    assert!(script.contains("codexServiceTierEffectiveThreadMode"));
-    assert!(script.contains("codexServiceTierDefaultModeForControlMode"));
-    assert!(script.contains("normalizeCodexServiceTierControlMode(state.mode) !== \"custom\""));
-    assert!(script.contains("state.draft = null"));
-    assert!(script.contains("后端未连接，无法切换服务模式"));
-    assert!(script.contains("未连接"));
-    assert!(script.contains("thread/start"));
-    assert!(script.contains("thread/resume"));
-    assert!(script.contains("turn/start"));
-    assert!(script.contains("send-cli-request-for-host"));
-    assert!(script.contains("start-conversation"));
-    assert!(script.contains("codex-service-tier-badge"));
-    assert!(script.contains("installCodexServiceTierBadge"));
-    assert!(script.contains("toggleCodexServiceTierFromBadge"));
-    assert!(script.contains("wireCodexServiceTierBadge"));
-    assert!(script.contains("codexServiceTierBadgePlacement"));
-    assert!(script.contains("codexServiceTierBadgeFooterGroup"));
-    assert!(script.contains("codexServiceTierFindComposerEl"));
-    assert!(script.contains("codexServiceTierVisibleComposerFooters"));
-    assert!(script.contains("codexServiceTierBestComposerFooter"));
-    assert!(script.contains("codexServiceTierComposerCandidates"));
-    assert!(script.contains("codexServiceTierComposerScore"));
-    assert!(script.contains("data-codex-service-tier-badge"));
-    assert!(script.contains("codexServiceTierBadgeWired"));
-    assert!(script.contains("setAttribute(\"role\", \"button\")"));
-    assert!(script.contains("setAttribute(\"tabindex\", \"0\")"));
-    assert!(script.contains("继承 config.toml"));
-    assert!(script.contains("service_tier=\\\"priority\\\""));
-    assert!(script.contains("当前 thread"));
-    assert!(script.contains("standard"));
-    assert!(script.contains("fast"));
 }
 
 #[test]

@@ -426,7 +426,6 @@
         pointer-events: auto;
         -webkit-app-region: no-drag;
       }
-      .codex-plus-modal-content[data-codex-plus-active-tab="support"] { width: min(820px, calc(100vw - 48px)); }
       .codex-plus-modal-header {
         display: flex;
         align-items: center;
@@ -498,7 +497,6 @@
       }
       .codex-plus-toggle,
       .codex-plus-action-button,
-      .codex-plus-issue-button,
       .codex-plus-backend-status {
         flex-shrink: 0;
         align-self: center;
@@ -553,13 +551,11 @@
       .${codexServiceTierBadgeClass}[data-tier="loading"] { color: #a1a1aa; }
       .${codexServiceTierBadgeClass}[data-tier="failed"] { border-color: rgba(248,113,113,.42); background: rgba(248,113,113,.12); color: #fca5a5; }
       .${codexServiceTierBadgeClass}[data-disabled="true"] { cursor: not-allowed; opacity: .78; }
-      .codex-plus-about { color: #a1a1aa; line-height: 1.5; }
       .codex-plus-tabs { display: flex; gap: 8px; padding: 0 20px 6px; flex: 0 0 auto; }
       .codex-plus-tab-button { border: 1px solid rgba(255,255,255,.14); border-radius: 999px; background: transparent; color: #d1d5db; font: 12px system-ui, sans-serif; padding: 5px 10px; }
       .codex-plus-tab-button[data-active="true"] { background: #10a37f; color: white; border-color: #10a37f; }
       .codex-plus-panel[hidden] { display: none; }
-      .codex-plus-action-button,
-      .codex-plus-issue-button { border: 1px solid rgba(255,255,255,.18); border-radius: 7px; background: #3f3f46; color: #f3f4f6; font: 12px system-ui, sans-serif; padding: 6px 8px; }
+      .codex-plus-action-button { border: 1px solid rgba(255,255,255,.18); border-radius: 7px; background: #3f3f46; color: #f3f4f6; font: 12px system-ui, sans-serif; padding: 6px 8px; }
       .codex-plus-worktree-actions {
         display: inline-flex;
         align-items: center;
@@ -607,23 +603,6 @@
       .codex-plus-user-script-error { margin-top: 2px; color: #f87171; font-size: 11px; word-break: break-all; }
       .codex-plus-user-script-actions { display: grid; justify-items: end; gap: 8px; min-width: 120px; }
       .codex-plus-user-script-reload { border: 1px solid rgba(255,255,255,.18); border-radius: 7px; background: #3f3f46; color: #f3f4f6; font: 12px system-ui, sans-serif; padding: 6px 8px; }
-      .codex-plus-sponsor-text { color: #d1d5db; font-size: 13px; line-height: 1.55; margin: 4px 0 12px; }
-      .codex-plus-ad-section { display: grid; gap: 10px; margin-top: 12px; }
-      .codex-plus-ad-section:first-of-type { margin-top: 0; }
-      .codex-plus-ad-section-title { color: #f8fafc; font-size: 15px; margin: 0; }
-      .codex-plus-ad-list { display: grid; gap: 14px; }
-      .codex-plus-ad-card { border: 1px solid rgba(96,165,250,.26); border-radius: 16px; background: linear-gradient(135deg, rgba(37,99,235,.18), rgba(255,255,255,.05)); box-shadow: 0 14px 36px rgba(0,0,0,.22); }
-      .codex-plus-ad-content { padding: 14px; }
-      .codex-plus-ad-title { margin: 0; color: #f8fafc; font-size: 17px; line-height: 1.35; }
-      .codex-plus-ad-description { margin: 6px 0 10px; color: #dbeafe; font-size: 13px; line-height: 1.55; }
-      .codex-plus-ad-highlights { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
-      .codex-plus-ad-highlights span { border: 1px solid rgba(255,255,255,.14); border-radius: 999px; background: rgba(255,255,255,.08); color: #f3f4f6; font-size: 12px; padding: 4px 8px; }
-      .codex-plus-ad-link { display: inline-flex; align-items: center; justify-content: center; border-radius: 9px; background: #2563eb; color: #ffffff; font-size: 13px; font-weight: 650; text-decoration: none; padding: 8px 12px; }
-      .codex-plus-ad-empty { border: 1px dashed rgba(255,255,255,.16); border-radius: 12px; color: #9ca3af; font-size: 13px; padding: 12px; text-align: center; }
-      .codex-plus-sponsor-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
-      .codex-plus-sponsor-card { border: 1px solid rgba(255,255,255,.1); border-radius: 12px; padding: 10px; background: rgba(255,255,255,.04); text-align: center; }
-      .codex-plus-sponsor-card-title { color: #f3f4f6; font-size: 13px; margin-bottom: 8px; }
-      .codex-plus-sponsor-qr { display: block; width: 100%; max-width: 340px; border-radius: 8px; margin: 0 auto; background: white; }
       .${timelineClass} {
         position: fixed;
         top: calc(72px + 12px);
@@ -703,7 +682,7 @@
   }
 
   function defaultCodexPlusSettings() {
-    return { pluginEntryUnlock: true, forcePluginInstall: true, modelWhitelistUnlock: true, sessionDelete: true, markdownExport: true, projectMove: true, conversationTimeline: true, conversationView: false, conversationViewMaxWidth: conversationViewDefaultWidth, threadScrollRestore: true, zedRemoteOpen: true, upstreamWorktreeCreate: true, nativeMenuPlacement: true, serviceTierControls: false };
+    return { pluginEntryUnlock: true, forcePluginInstall: true, modelWhitelistUnlock: true, sessionDelete: true, markdownExport: true, projectMove: true, conversationTimeline: false, conversationView: false, conversationViewMaxWidth: conversationViewDefaultWidth, threadScrollRestore: true, zedRemoteOpen: true, upstreamWorktreeCreate: true, nativeMenuPlacement: true, serviceTierControls: false };
   }
 
   function codexPlusSettings() {
@@ -728,6 +707,7 @@
     }
     try {
       const settings = { ...defaultCodexPlusSettings(), ...JSON.parse(localStorage.getItem(codexPlusSettingsKey) || "{}") };
+      settings.serviceTierControls = false;
       if (relayPatchDisabled) {
         settings.pluginEntryUnlock = false;
         settings.forcePluginInstall = false;
@@ -735,6 +715,7 @@
       return settings;
     } catch {
       const settings = defaultCodexPlusSettings();
+      settings.serviceTierControls = false;
       if (relayPatchDisabled) {
         settings.pluginEntryUnlock = false;
         settings.forcePluginInstall = false;
@@ -744,6 +725,7 @@
   }
 
   function setCodexPlusSetting(key, value) {
+    if (key === "serviceTierControls") value = false;
     let stored = {};
     try {
       stored = JSON.parse(localStorage.getItem(codexPlusSettingsKey) || "{}");
@@ -1539,105 +1521,6 @@
     }
   }
 
-  const codexPlusAdsUrl = "/ads";
-  let codexPlusAds = [];
-  let codexPlusAdsLoaded = false;
-
-  function isCodexPlusAdExpired(ad) {
-    if (!ad.expires_at) return false;
-    const expiresAt = Date.parse(ad.expires_at);
-    return Number.isFinite(expiresAt) && expiresAt < Date.now();
-  }
-
-  function normalizeCodexPlusAds(payload) {
-    if (!payload || !Array.isArray(payload.ads)) return [];
-    return payload.ads.filter((ad) => {
-      return ad && ["sponsor", "normal"].includes(ad.type) && ad.title && ad.description && ad.url && !isCodexPlusAdExpired(ad);
-    }).map((ad) => ({
-      id: String(ad.id || ad.title),
-      type: ad.type,
-      title: String(ad.title),
-      description: String(ad.description),
-      url: String(ad.url),
-      expires_at: ad.expires_at ? String(ad.expires_at) : "",
-      highlights: Array.isArray(ad.highlights) ? ad.highlights.map((item) => String(item)).filter(Boolean) : [],
-    }));
-  }
-
-  function renderCodexPlusAdGroup(type, emptyText) {
-    const ads = codexPlusAds.filter((ad) => ad.type === type);
-    if (!ads.length) return `<div class="codex-plus-ad-empty">${escapeHtml(emptyText)}</div>`;
-    return ads.map((ad) => `
-      <article class="codex-plus-ad-card">
-        <div class="codex-plus-ad-content">
-          <h3 class="codex-plus-ad-title">${escapeHtml(ad.title)}</h3>
-          <p class="codex-plus-ad-description">${escapeHtml(ad.description)}</p>
-          <div class="codex-plus-ad-highlights">
-            ${ad.highlights.map((item) => `<span>${escapeHtml(item)}</span>`).join("")}
-          </div>
-          <a class="codex-plus-ad-link" href="${escapeHtml(ad.url)}" target="_blank" rel="noreferrer">访问 ${escapeHtml(new URL(ad.url).hostname)}</a>
-        </div>
-      </article>
-    `).join("");
-  }
-
-  function renderCodexPlusAds() {
-    if (!codexPlusAdsLoaded) return `<div class="codex-plus-ad-empty">推荐内容加载中…</div>`;
-    if (!codexPlusAds.length) return `<div class="codex-plus-ad-empty">暂无推荐内容。</div>`;
-    return `
-      <section class="codex-plus-ad-section">
-        <h3 class="codex-plus-ad-section-title">赞助商推荐</h3>
-        <div class="codex-plus-ad-list">${renderCodexPlusAdGroup("sponsor", "暂无赞助商推荐。")}</div>
-      </section>
-      <section class="codex-plus-ad-section">
-        <h3 class="codex-plus-ad-section-title">普通推荐</h3>
-        <div class="codex-plus-ad-list">${renderCodexPlusAdGroup("normal", "暂无普通推荐。")}</div>
-      </section>
-    `;
-  }
-
-  function cacheBustCodexPlusAdUrl(url, version) {
-    return `${url}${url.includes("?") ? "&" : "?"}v=${version}`;
-  }
-
-  async function directFetchCodexPlusAds() {
-    const urls = [
-      "https://raw.githubusercontent.com/BigPizzaV3/Ad-List/main/ads.json",
-      "https://cdn.jsdelivr.net/gh/BigPizzaV3/Ad-List@main/ads.json",
-    ];
-    let lastError = null;
-    const cacheBust = Date.now();
-    for (const url of urls) {
-      try {
-        const response = await fetch(cacheBustCodexPlusAdUrl(url, cacheBust), {
-          headers: { "Accept": "application/json" },
-          cache: "no-store",
-        });
-        if (!response.ok) throw new Error(`HTTP ${response.status}`);
-        return await response.json();
-      } catch (error) {
-        lastError = error;
-      }
-    }
-    throw lastError || new Error("ad list unavailable");
-  }
-
-  async function fetchCodexPlusAds() {
-    try {
-      codexPlusAds = normalizeCodexPlusAds(await directFetchCodexPlusAds());
-    } catch (error) {
-      sendCodexPlusDiagnostic("ads_fetch_failed", {
-        errorName: error?.name || "",
-        errorMessage: error?.message || String(error),
-      });
-      codexPlusAds = [];
-    } finally {
-      codexPlusAdsLoaded = true;
-      const panel = document.querySelector('[data-codex-plus-panel="sponsor"] .codex-plus-ad-remote');
-      if (panel) panel.innerHTML = renderCodexPlusAds();
-    }
-  }
-
   function selectCodexPlusTab(tab) {
     document.querySelectorAll(".codex-plus-modal-content").forEach((modal) => {
       modal.dataset.codexPlusActiveTab = tab;
@@ -1665,8 +1548,6 @@
         <div class="codex-plus-tabs" role="tablist" aria-label="Codex++">
           <button type="button" class="codex-plus-tab-button" data-codex-plus-tab="home" data-active="true">主页</button>
           <button type="button" class="codex-plus-tab-button" data-codex-plus-tab="userScripts" data-active="false">用户脚本</button>
-          <button type="button" class="codex-plus-tab-button" data-codex-plus-tab="sponsor" data-active="false">推荐内容</button>
-          <button type="button" class="codex-plus-tab-button" data-codex-plus-tab="support" data-active="false">请作者喝咖啡</button>
         </div>
         <div class="codex-plus-modal-body">
           <div class="codex-plus-panel" data-codex-plus-panel="home">
@@ -1692,28 +1573,6 @@
             <div class="codex-plus-row">
               <div><div class="codex-plus-row-title">模型白名单解锁</div><div class="codex-plus-row-description">从环境变量和 Codex config.toml 中的中转站 /v1/models 拉取模型，并补进模型选择列表。</div></div>
               <button type="button" class="codex-plus-toggle" data-codex-plus-setting="modelWhitelistUnlock"><span></span></button>
-            </div>
-            <div class="codex-plus-row">
-              <div><div class="codex-plus-row-title">Fast 按钮</div><div class="codex-plus-row-description">显示服务模式切换按钮，并允许把请求切到 Fast / priority；默认关闭以避免误触高价服务模式。</div></div>
-              <button type="button" class="codex-plus-toggle" data-codex-plus-setting="serviceTierControls"><span></span></button>
-            </div>
-            <div class="codex-plus-row" data-codex-service-tier-controls="true">
-              <div><div class="codex-plus-row-title">服务模式</div><div class="codex-plus-row-description">继承使用 config.toml 的 service tier；全局模式覆盖全部 thread；自定义允许按 thread 覆盖。</div></div>
-              <div class="codex-plus-service-tier-control">
-                <div class="codex-plus-service-tier-status" data-codex-service-tier-status="true" data-status="loading">正在读取…</div>
-                <div class="codex-plus-service-tier-actions">
-                  <button type="button" class="codex-plus-service-tier-button" data-codex-service-tier-inherit="true">继承</button>
-                  <button type="button" class="codex-plus-service-tier-button" data-codex-service-tier-standard="true">全局 Standard</button>
-                  <button type="button" class="codex-plus-service-tier-button" data-codex-service-tier-fast="true">全局 Fast</button>
-                  <button type="button" class="codex-plus-service-tier-button" data-codex-service-tier-custom="true">自定义</button>
-                </div>
-                <div class="codex-plus-service-tier-actions codex-plus-service-tier-thread-actions">
-                  <span class="codex-plus-service-tier-thread-label">当前 thread 覆盖</span>
-                  <button type="button" class="codex-plus-service-tier-button" data-codex-service-tier-thread-inherit="true" title="当前 thread 不单独覆盖，继承 config.toml">继承</button>
-                  <button type="button" class="codex-plus-service-tier-button" data-codex-service-tier-thread-standard="true" title="仅当前 thread 使用 Standard，并切到自定义模式">Standard</button>
-                  <button type="button" class="codex-plus-service-tier-button" data-codex-service-tier-thread-fast="true" title="仅当前 thread 使用 Fast，并切到自定义模式">Fast</button>
-                </div>
-              </div>
             </div>
             <div class="codex-plus-row">
               <div><div class="codex-plus-row-title">会话删除</div><div class="codex-plus-row-description">在会话列表悬停显示删除按钮，并支持撤销。</div></div>
@@ -1769,17 +1628,6 @@
               <div><div class="codex-plus-row-title">打开 DevTools</div><div class="codex-plus-row-description">打开当前 Codex 页面开发者工具，方便查看用户脚本报错。</div></div>
               <button type="button" class="codex-plus-action-button" data-codex-open-devtools="true">打开 DevTools</button>
             </div>
-            <div class="codex-plus-row">
-              <div><div class="codex-plus-row-title">关于 Codex++</div><div class="codex-plus-about">Codex++ 是通过外部 launcher 注入的增强菜单，不修改 Codex App 原始安装文件。<br>Build: <span data-codex-plus-build="true">${codexPlusBuild}</span><br>GitHub: <a href="https://github.com/BigPizzaV3/CodexPlusPlus" target="_blank" rel="noreferrer">https://github.com/BigPizzaV3/CodexPlusPlus</a><br>Discord: <a href="https://discord.gg/y96kX7A76v" target="_blank" rel="noreferrer">https://discord.gg/y96kX7A76v</a></div></div>
-            </div>
-            <div class="codex-plus-row">
-              <div><div class="codex-plus-row-title">Discord 社区</div><div class="codex-plus-row-description">加入 Discord 获取更新消息、反馈问题或交流使用体验。</div></div>
-              <button type="button" class="codex-plus-action-button" data-codex-plus-discord="true">打开 Discord</button>
-            </div>
-            <div class="codex-plus-row">
-              <div><div class="codex-plus-row-title">提出问题</div><div class="codex-plus-row-description">打开 GitHub Issues 反馈问题或建议。</div></div>
-              <button type="button" class="codex-plus-issue-button" data-codex-plus-issue="true">提出问题</button>
-            </div>
           </div>
           <div class="codex-plus-panel" data-codex-plus-panel="userScripts" hidden>
             <div class="codex-plus-row" data-codex-user-scripts-section="true">
@@ -1793,25 +1641,6 @@
               <div class="codex-plus-user-script-actions">
                 <button type="button" class="codex-plus-toggle" data-codex-user-scripts-enabled="true"><span></span></button>
                 <button type="button" class="codex-plus-user-script-reload" data-codex-user-scripts-reload="true">重新加载用户脚本</button>
-              </div>
-            </div>
-          </div>
-          <div class="codex-plus-panel" data-codex-plus-panel="sponsor" hidden>
-            <div class="codex-plus-sponsor-text">推荐内容分为赞助商推荐和普通推荐。赞助商推荐来自支持 Codex++ 继续维护的合作方；普通推荐用于展示适合 Codex 用户的服务与信息。</div>
-            <div class="codex-plus-ad-remote">
-              ${renderCodexPlusAds()}
-            </div>
-          </div>
-          <div class="codex-plus-panel" data-codex-plus-panel="support" hidden>
-            <div class="codex-plus-sponsor-text">如果 Codex++ 帮到了你，可以请我喝杯咖啡，或者随手赞赏支持一下继续维护。</div>
-            <div class="codex-plus-sponsor-grid">
-              <div class="codex-plus-sponsor-card">
-                <div class="codex-plus-sponsor-card-title">支付宝</div>
-                <img class="codex-plus-sponsor-qr" src="${window.__CODEX_PLUS_SPONSOR_IMAGES__?.alipay || `${helperBase}/assets/sponsor-alipay.jpg`}" alt="支付宝赞赏码">
-              </div>
-              <div class="codex-plus-sponsor-card">
-                <div class="codex-plus-sponsor-card-title">微信</div>
-                <img class="codex-plus-sponsor-qr" src="${window.__CODEX_PLUS_SPONSOR_IMAGES__?.wechat || `${helperBase}/assets/sponsor-wechat.jpg`}" alt="微信赞赏码">
               </div>
             </div>
           </div>
@@ -1857,51 +1686,13 @@
         openManagerFromCodex();
         return;
       }
-      if (target?.closest("[data-codex-plus-discord]")) {
-        window.open("https://discord.gg/y96kX7A76v", "_blank");
-        return;
-      }
       if (target?.closest("[data-codex-backend-repair]")) {
         repairBackend();
-        return;
-      }
-      const issueButton = target?.closest("[data-codex-plus-issue]");
-      if (issueButton) {
-        const issueUrl = "https://github.com/BigPizzaV3/CodexPlusPlus/issues";
-        window.open(issueUrl, "_blank");
         return;
       }
       const userScriptsEnabled = target?.closest("[data-codex-user-scripts-enabled]");
       if (userScriptsEnabled) {
         loadUserScripts("/user-scripts/set-enabled", { enabled: userScriptsEnabled.dataset.enabled !== "true" });
-        return;
-      }
-      if (target?.closest("[data-codex-service-tier-inherit]")) {
-        setCodexServiceTierControlMode("inherit");
-        return;
-      }
-      if (target?.closest("[data-codex-service-tier-standard]")) {
-        setCodexServiceTierControlMode("global-standard");
-        return;
-      }
-      if (target?.closest("[data-codex-service-tier-fast]")) {
-        setCodexServiceTierControlMode("global-fast");
-        return;
-      }
-      if (target?.closest("[data-codex-service-tier-custom]")) {
-        setCodexServiceTierControlMode("custom");
-        return;
-      }
-      if (target?.closest("[data-codex-service-tier-thread-inherit]")) {
-        setCodexThreadServiceTierMode("inherit");
-        return;
-      }
-      if (target?.closest("[data-codex-service-tier-thread-standard]")) {
-        setCodexThreadServiceTierMode("standard");
-        return;
-      }
-      if (target?.closest("[data-codex-service-tier-thread-fast]")) {
-        setCodexThreadServiceTierMode("fast");
         return;
       }
       const userScriptToggle = target?.closest("[data-codex-user-script-key]");
@@ -1936,7 +1727,6 @@
       }
     }, true);
     document.body.appendChild(overlay);
-    if (!codexPlusAdsLoaded) fetchCodexPlusAds();
     selectCodexPlusTab("home");
     renderCodexPlusMenu();
     refreshCodexPlusBackendToggles();
