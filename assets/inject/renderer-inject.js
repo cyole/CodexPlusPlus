@@ -45,6 +45,7 @@
   const codexExportVersion = "1";
   const codexProjectMoveVersion = "1";
   const codexActionGroupVersion = "4";
+  const sidebarSessionActionsEnabled = false;
   const codexArchiveRowActionsVersion = "1";
   const codexArchiveDeleteAllVersion = "2";
   const codexConversationTimelineVersion = "2";
@@ -5523,7 +5524,7 @@
 
   function attachButton(row) {
     const settings = codexPlusSettings();
-    if (!settings.sessionDelete && !settings.markdownExport && !settings.projectMove) {
+    if (!sidebarSessionActionsEnabled || (!settings.sessionDelete && !settings.markdownExport && !settings.projectMove)) {
       removeActionGroups(row);
       row.dataset.codexDeleteRow = "false";
       row.dataset.codexProjectMoveRow = "false";
