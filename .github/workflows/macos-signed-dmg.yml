@@ -13,11 +13,53 @@ on:
         type: string
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
+  release-meta:
+    name: Resolve release metadata
+    runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.meta.outputs.tag }}
+      version: ${{ steps.meta.outputs.version }}
+    steps:
+      - name: Checkout ref
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref || github.ref_name }}
+
+      - name: Resolve version and tag
+        id: meta
+        env:
+          INPUT_VERSION: ${{ inputs.version }}
+          INPUT_REF: ${{ inputs.ref }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          VERSION="$INPUT_VERSION"
+          VERSION="${VERSION#v}"
+          VERSION="${VERSION#V}"
+          if [[ -z "$VERSION" ]]; then
+            REF="${INPUT_REF:-$GITHUB_REF_NAME}"
+            CANDIDATE="${REF#refs/tags/}"
+            CANDIDATE="${CANDIDATE#v}"
+            CANDIDATE="${CANDIDATE#V}"
+            if [[ "$CANDIDATE" =~ ^[0-9]+([.][0-9]+){1,3}([-+][0-9A-Za-z.-]+)?$ ]]; then
+              VERSION="$CANDIDATE"
+            fi
+          fi
+          if [[ -z "$VERSION" ]]; then
+            VERSION="$(node -p "require('./apps/codex-plus-manager/package.json').version")"
+          fi
+          TAG="v$VERSION"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          echo "Using version: $VERSION"
+          echo "Using tag: $TAG"
+
   signed-dmg:
     name: Signed and notarized macOS DMG (${{ matrix.arch }})
+    needs: release-meta
     runs-on: ${{ matrix.runner }}
     strategy:
       fail-fast: false
@@ -117,35 +159,13 @@ jobs:
       - name: Build binaries
         run: cargo build --release --target ${{ matrix.target }}
 
-      - name: Resolve version
-        env:
-          INPUT_VERSION: ${{ inputs.version }}
-          INPUT_REF: ${{ inputs.ref }}
-        shell: bash
-        run: |
-          set -euo pipefail
-          VERSION="$INPUT_VERSION"
-          if [[ -z "$VERSION" ]]; then
-            REF="${INPUT_REF:-$GITHUB_REF_NAME}"
-            CANDIDATE="${REF#refs/tags/}"
-            CANDIDATE="${CANDIDATE#v}"
-            CANDIDATE="${CANDIDATE#V}"
-            if [[ "$CANDIDATE" =~ ^[0-9]+([.][0-9]+){1,3}([-+][0-9A-Za-z.-]+)?$ ]]; then
-              VERSION="$CANDIDATE"
-            fi
-          fi
-          if [[ -z "$VERSION" ]]; then
-            VERSION="$(node -p "require('./apps/codex-plus-manager/package.json').version")"
-          fi
-          echo "VERSION=$VERSION" >> "$GITHUB_ENV"
-          echo "Using version: $VERSION"
-
       - name: Build signed and notarized macOS DMG
         env:
           APPLE_SIGNING_IDENTITY: ${{ secrets.APPLE_SIGNING_IDENTITY }}
           APPLE_NOTARIZE: "1"
           APPLE_API_KEY_ID: ${{ secrets.APPLE_API_KEY_ID }}
           APPLE_API_ISSUER_ID: ${{ secrets.APPLE_API_ISSUER_ID }}
+          VERSION: ${{ needs.release-meta.outputs.version }}
         run: |
           DIST="$PWD/dist/macos-signed" \
           BINARY_DIR="$PWD/target/${{ matrix.target }}/release" \
@@ -154,7 +174,7 @@ jobs:
       - name: Upload signed DMG artifact
         uses: actions/upload-artifact@v4
         with:
-          name: CodexPlusPlus-${{ env.VERSION }}-macos-${{ matrix.arch }}-signed
+          name: CodexPlusPlus-${{ needs.release-meta.outputs.version }}-macos-${{ matrix.arch }}-signed
           path: |
             dist/macos-signed/*.dmg
             dist/macos-signed/*.sha256
@@ -166,4 +186,54 @@ jobs:
         run: |
           if [[ -n "${APPLE_SIGNING_KEYCHAIN_PATH:-}" ]]; then
             security delete-keychain "$APPLE_SIGNING_KEYCHAIN_PATH" || true
+          fi
+
+  draft-release:
+    name: Create draft GitHub Release
+    needs:
+      - release-meta
+      - signed-dmg
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout ref
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref || github.ref_name }}
+
+      - name: Download signed DMG artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: CodexPlusPlus-${{ needs.release-meta.outputs.version }}-macos-*-signed
+          path: dist/release-upload
+          merge-multiple: true
+
+      - name: Create or update draft release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ needs.release-meta.outputs.tag }}
+          VERSION: ${{ needs.release-meta.outputs.version }}
+          REPO: ${{ github.repository }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          mapfile -t files < <(find dist/release-upload -type f \( -name '*.dmg' -o -name '*.sha256' \) | sort)
+          if [[ "${#files[@]}" -eq 0 ]]; then
+            echo "::error::No signed DMG files found"
+            exit 1
+          fi
+
+          target_sha="$(git rev-parse HEAD)"
+          printf 'Signed and notarized macOS DMG build for Codex++ %s.\n\nBuilt from: %s\n' \
+            "$VERSION" \
+            "$target_sha" > release-notes.md
+
+          if gh release view "$TAG" --repo "$REPO" >/dev/null 2>&1; then
+            gh release upload "$TAG" "${files[@]}" --clobber --repo "$REPO"
+          else
+            gh release create "$TAG" "${files[@]}" \
+              --draft \
+              --title "Codex++ $TAG" \
+              --notes-file release-notes.md \
+              --target "$target_sha" \
+              --repo "$REPO"
           fi
